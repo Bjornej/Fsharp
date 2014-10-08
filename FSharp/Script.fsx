@@ -141,8 +141,30 @@ let testInput() =
     | Some(v) -> v
     | None -> 0
 
-type Option<'T> = 
-    | Some of 'T
-    | None
+//type Option<'T> = 
+//    | Some of 'T
+//    | None
 
   //  capitolo 6
+
+let (+>) a b = a + "\n>>" + b
+
+printfn "%s" ("Hello world!" +>
+              "How are you today?" +>
+              "I'm fine!")
+
+let a = List.head(List.rev [1 .. 5])
+let a2 = [1 .. 5] |> List.rev |> List.head 
+
+let mapSchedule f sch =
+    match sch with
+    |Never -> Never
+    |Once(dt) -> Once(f(dt))
+    |Repeatedly(dt,ts) -> Repeatedly(f(dt),ts)
+
+let sumRead = 
+    match (readInput()) with 
+    | None -> None 
+    | Some(first) -> readInput() |> Option.map (fun second -> first + second )
+
+//capitolo 7
