@@ -168,3 +168,165 @@ let sumRead =
     | Some(first) -> readInput() |> Option.map (fun second -> first + second )
 
 //capitolo 7
+
+type Rect = {
+    Left : float32
+    Top:float32
+    Width:float32
+    Height:float32
+}
+
+let moveUp (a:Rect) = 
+    let rc2 = {a with Left = a.Left + 100.0f}
+    rc2
+
+open System.Drawing
+
+let deflate(rect,w,h) = 
+    {Left = rect.Top + w
+     Top = rect.Left+h
+     Width = rect.Width - (2.0f * w)
+     Height = rect.Height - (2.0f * h) }
+
+let toRectangleF(rc) = 
+    RectangleF(rc.Left,rc.Top,rc.Width,rc.Height)
+
+
+type Client = 
+    {
+        Name:string
+        Income:int
+        YearsInJob:int
+        UsesCreditCards:bool
+        CriminalRecord:bool
+    }
+
+let john = { 
+    Name = "John Doe"
+    Income = 40000
+    YearsInJob = 1        
+    UsesCreditCards = true
+    CriminalRecord = false 
+}
+
+let tests = 
+    [
+     (fun cl -> cl.CriminalRecord=true);
+     (fun cl -> cl.Income < 30000);
+     (fun cl -> cl.UsesCreditCards = false);
+     (fun cl -> cl.YearsInJob < 2)
+    ]
+
+let testClient(client) =
+    let issues = tests |> List.filter ((|>) client)
+    let suitable = issues.Length <= 1
+    printfn "Client: %s\nOffer a loan: %s (issues = %d)" client.Name (if (suitable) then "YES" else "NO") issues.Length
+
+
+type QueryInfo = 
+    { 
+        Title    : string      
+        Check    : Client -> bool   
+        Positive : Decision      
+        Negative : Decision 
+    }     
+       
+ and Decision =                   
+   | Result of string      
+   | Query  of QueryInfo     
+
+
+let rec testTree(client,tree) = 
+    match tree with
+        | Result(msg) -> printf "Result : %s" msg
+        | Query(qi) -> if(qi.Check(client)) then 
+                            printf "yes" 
+                            testTree(client, qi.Positive)
+                        else 
+                            printf "no"
+                            testTree( client, qi.Negative)
+                       
+//chapter 9
+
+type Rect2 = 
+    { Left: float32
+      Top:float32
+      Height:float32
+      Width : float32}
+
+    /// Test commento
+    /// prova
+    member x.Deflate(w,h) =
+        { Left = x.Top + w
+          Top = x.Left + h
+          Width = x.Width - w
+          Height = x.Height - h}
+
+    member x.ToRectangleF() =
+        RectangleF(x.Left,x.Top,x.Width,x.Height)
+
+
+type ClientTest = 
+    abstract Check : Client -> bool
+    abstract Report: Client -> unit
+
+ let testCriminal =      
+    { new ClientTest with    
+         member x.Check(cl) = cl.CriminalRecord = true   
+         member x.Report(cl) =
+            printfn "'%s' has a criminal record!" cl.Name }
+
+
+
+type ClientInfo(name, income, years) =
+    let q = income / 5000 * years
+    do printfn "Creating client '%s'" name
+
+    member x.Name = name
+    member x.Income = income
+    member x.Years = years 
+    member x.Report() =
+        printfn "Client: %s, q=%d" name q   
+
+
+type CoefficientTest(income, years, min) = 
+   let coeff cl =
+        ((float cl.Income)*income + (float cl.YearsInJob)*years)
+   let report cl =
+        printfn "Coefficient %f is less than %f." (coeff cl) min   
+      
+   member x.PrintInfo() =
+        printfn "income*%f + years*%f > %f" income years min  
+
+   interface ClientTest with 
+        member x.Report cl = report cl
+        member x.Check cl = (coeff cl) < min 
+
+//capitolo 10
+
+type IntTree = 
+    | Leaf of int
+    | Node of IntTree * IntTree
+
+let rec sumTree(tree) =
+    match tree with
+    | Leaf(a) -> a
+    | Node(a,b) -> sumTree(a) + sumTree(b)
+
+let rec sumTreeCont tree cont =
+    match tree with
+    | Leaf(a) -> cont(a)
+    | Node(a,b) -> sumTreeCont a (fun n -> 
+                        sumTreeCont b (fun m -> cont(n+m)))
+
+type InfiniteInts =    
+    | LazyCell of int * Lazy<InfiniteInts> 
+
+let rec infiniteNumbers(num) = LazyCell(num, lazy infiniteNumbers(num+1))
+
+let next(LazyCell(hd,tail)) = tail.Force()
+
+
+let pos = infiniteNumbers(0) |> next |> next |> next |> next |> next 
+
+//chapter 12

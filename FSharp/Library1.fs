@@ -1,4 +1,5 @@
 ﻿namespace FSharp
 
-type Class1() = 
-    member this.X = "F#"
+module Test = 
+    type Class1() = 
+        member this.X = "F#"
